@@ -887,6 +887,76 @@ The course admin shall be able to cancel the use case at any time prior to submi
 **Assumptions:**
 **Open Issues:**
 
+### **UC-SEC-remind-non-submitters: The instructor reminds students of missing weekly submissions**
+
+**UC ID and Name:** UC-SEC-remind-non-submitters: Remind students of missing weekly submissions
+**Created By:** Codex, for the assignment author
+**Date Created:** 2026-10-02
+**Primary Actor:** instructor (including a course admin exercising instructor capabilities)
+**Secondary Actors:** student (email recipient), Gmail SMTP service
+**Trigger:** The instructor requests the missing-submission report for a course section.
+**Description:** The instructor identifies missing weekly activity reports and peer evaluations in her course section and reminds selected students while they can still submit.
+
+**Preconditions:**
+- PRE-1. The instructor is logged into the system.
+- PRE-2. The course section is accessible under BR-section-scoped-access and BR-role-based-access.
+
+**Postconditions:**
+- POST-1. The instructor has seen the missing-submission report for the selected course section and target week.
+- POST-2. For a confirmed send, each selected recipient has an accepted, failed, or skipped outcome; attempts obey BR-reminder-rate-limit. Acceptance means the mail service accepted the message, not confirmed inbox delivery.
+- POST-3. Submission records are unchanged.
+
+**Main Success Scenario:**
+1. The instructor opens the missing-submission report for a course section.
+2. The system checks access and displays the default target week under BR-reminder-week; the instructor may select another permitted week.
+3. The system displays students missing either artifact, with each artifact's status and reminder eligibility, using BR-reminder-submission-status and BR-reminder-eligibility.
+4. The instructor selects one or more displayed students and chooses weekly activity reports, peer evaluations, or both for the reminder.
+5. The system previews the recipients and missing artifact types that are eligible to be sent, applying BR-reminder-rate-limit, and asks for confirmation.
+6. The instructor confirms the send.
+7. The system rechecks access, submission status, eligibility, and the rate limit immediately before each recipient's email attempt, reserves the allowance, and sends one individual email containing only that recipient's remaining selected artifacts.
+8. The system displays the per-recipient results and totals for accepted, failed, and skipped recipients.
+9. Use case ends.
+
+**Extensions:**
+- **2a. The caller lacks the required role or course-section access, including a forged request:**
+  - 2a1. The system refuses the request without disclosing names, submission status, or recipient results. No email is sent. Use case ends (BR-role-based-access, BR-section-scoped-access, BR-team-scoped-access).
+- **2b. The week is malformed or future:**
+  - 2b1. The system identifies the invalid week under BR-reminder-week and asks the instructor to correct it; return to step 2.
+- **3a. A student cannot submit because she has no team or is deactivated:**
+  - 3a1. The system lists the student separately as ineligible under BR-reminder-eligibility, with no reminder selection.
+- **3b. The evaluated week is inactive or its submission window is closed:**
+  - 3b1. The system shows the missing evaluation with the applicable exclusion reason and disables that artifact's reminder under BR-active-weeks, BR-evaluation-submission-window, and BR-reminder-eligibility. Other eligible artifacts remain selectable.
+- **3c. A student deleted previously submitted work:**
+  - 3c1. The system recomputes the artifact's status under BR-reminder-submission-status; the normal eligibility and rate limit still apply.
+- **3d. Nobody has missing work:**
+  - 3d1. The system shows an empty report and sends no email. Use case ends.
+- **4a. The instructor wants only to inspect the report, or cancels before confirming:**
+  - 4a1. Use case ends without email or a consumed allowance.
+- **5a. Repeated nudges exhaust the allowance, including requests from another instructor or the scheduler:**
+  - 5a1. The system excludes each limited artifact under BR-reminder-rate-limit and shows its next eligible time. If no selected artifacts remain, no send is offered; return to step 3.
+- **7a. A student submits, loses eligibility, or becomes rate-limited after the preview:**
+  - 7a1. The system removes affected artifacts from that recipient's email. If none remain, it records a skipped result with the reason and consumes no allowance; continue with the remaining recipients.
+- **7b. The mail server rejects an address or sending raises an error:**
+  - 7b1. The system records a failed result, logs the failure, and continues with the next recipient. It does not retry automatically; BR-reminder-rate-limit applies.
+- **7c. The instructor loses access after the preview:**
+  - 7c1. The system refuses further sends and further disclosure of student results. Already attempted emails cannot be recalled. Use case ends.
+
+**Priority:** High
+**Frequency of Use:** Weekly per course section, with additional instructor-initiated checks before deadlines.
+**Business Rules:** BR-role-based-access, BR-section-scoped-access, BR-team-scoped-access, BR-student-lifecycle, BR-team-assignment-required, BR-active-weeks, BR-evaluation-submission-window, BR-evaluation-editable-until-close, BR-reminder-submission-status, BR-reminder-eligibility, BR-reminder-week, BR-reminder-rate-limit, BR-reminder-scheduled-selection
+
+**Associated Information:**
+
+Details:
+- The report identifies the course section and target ISO week. Each row shows student name, email, team, separate weekly activity report and peer evaluation statuses, configured due dates with time zone, and exclusion reasons or the next allowed reminder time. The report is a view of current records, not a reconstruction of historical enrollment.
+- The preview and results are restricted to the authorized instructor. Students cannot access this report, even for their own team. Apply CO-ferpa and SEC-ferpa to the report, transmission, and stored attempt outcomes.
+- An email names the course section, target week, missing artifact types, configured due dates with time zone, and the application sign-in link. It contains no grades, comments, other students' identities, or other students' addresses. Delivery uses the existing Gmail SMTP integration (CI-email-notifications).
+- Scheduled dispatch is a separate background behavior governed by BR-reminder-scheduled-selection, not an instructor action in this scenario. It uses the same status, eligibility, rate-limit, individual-message, and failure-isolation requirements. A course-section failure is logged and does not prevent subsequent course sections from being processed.
+
+**Related Use Cases:** UC-EVA-submit-evaluation, UC-SEC-setup-active-weeks
+**Assumptions:** Existing submission validation defines which persisted records are valid; this use case adds no submission or finalization action.
+**Open Issues:** None.
+
 ## **Team**
 
 ### **UC-TEA-find-teams: The course admin/instructor finds teams**

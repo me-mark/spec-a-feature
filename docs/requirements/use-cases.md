@@ -8,7 +8,7 @@
 
 | Date | Version | Description | Author |
 | ----- | ----- | ----- | ----- |
-| \<dd/mmm/yy\> | \<x.x\> | \<details\> | \<name\> |
+| 10/02/2026 | 1.01 | Added remind non submitters usecases | Cong Le |
 |  |  |  |  |
 |  |  |  |  |
 |  |  |  |  |
@@ -890,7 +890,7 @@ The course admin shall be able to cancel the use case at any time prior to submi
 ### **UC-SEC-remind-non-submitters: The instructor reminds students of missing weekly submissions**
 
 **UC ID and Name:** UC-SEC-remind-non-submitters: Remind students of missing weekly submissions
-**Created By:** Codex, for the assignment author
+**Created By:** Cong Le
 **Date Created:** 2026-10-02
 **Primary Actor:** instructor (including a course admin exercising instructor capabilities)
 **Secondary Actors:** student (email recipient), Gmail SMTP service
